@@ -2,7 +2,15 @@
 try {
     $db = new PDO('mysql:host=localhost;dbname=chatapp;', 'root', '');
 } catch (Exception $e) {
-    // die('Une erreur a été trouvé : ' . $e->getMessage()); 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $response = [
+            "server_error" => true,
+            "message"=> 'Une erreur a été trouvé : ' . $e->getMessage(),
+        ];
+        echo json_encode($response);
+        return;
+        // die('Une erreur a été trouvé : ' . $e->getMessage()); 
+    }
 ?>
     <!DOCTYPE html>
     <html lang="fr">

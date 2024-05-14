@@ -1,6 +1,6 @@
 import { TimeFormatter, NumberFormatter } from "./formatters";
 import { refreshImages } from "./images.js";
-import { sessionError } from "./forms.js"
+import { sessionError, serverError } from "./forms.js"
 import { 
     currentUser, 
     MessageVerifier, 
@@ -34,6 +34,10 @@ async function RenderLastMessages() {
         messageList.classList.add('loading');
     }
     const getDatas = await getLastMessages();
+    if (getDatas.server_error) {
+        serverError();
+        return;
+    }
     if (getDatas.session_error) {
         sessionError();
         return;
@@ -247,6 +251,10 @@ function addNewChat() {
             messageList.innerHTML = '';
             messageList.classList.add('loading');
             const getDatas = await getAvailableUsers();
+            if (getDatas.server_error) {
+                serverError();
+                return;
+            }
             if (getDatas.session_error) {
                 sessionError();
                 return;
@@ -724,6 +732,10 @@ async function getNewMessage(id) {
     const chatBox = document.querySelector('.chat-body');
     const allMessages = chatBox.querySelectorAll('.message-content:not(.error)');
     const new_message = await getMessages(id);
+    if (getDatas.server_error) {
+        serverError();
+        return;
+    }
     if (new_message.session_error) {
         sessionError();
         return;
