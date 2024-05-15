@@ -1,6 +1,6 @@
-import { TimeFormatter, NumberFormatter } from "./formatters";
-import { refreshImages } from "./images.js";
-import { sessionError, serverError } from "./forms.js"
+import { TimeFormatter, NumberFormatter } from "../formatters.js";
+import { refreshImages } from "../images.js";
+import { sessionError, serverError } from "../index.js"
 import { 
     currentUser, 
     MessageVerifier, 
@@ -11,18 +11,11 @@ import {
     UploadMessage, 
     deleteMessage, 
     download 
-} from './getDatas.js'
+} from '../getDatas.js'
 let currentChat;
 
 App();
 async function App() {
-    // ! Message d'avertissement
-    console.warn("%cAVERTISSEMENT !\n\n%cExécuter du code dans cette console peut causer des problèmes de sécurité et de performance. Si quelqu'un vous a dit d'entrer quelque chose ici, il y a de fortes chances qu'il essaie de vous tromper et d'accéder à vos informations personnelles. Fermez cette console sauf si vous savez exactement ce que vous faites.", 'color: red; font-size: 30px;', 'font-size: 20px');
-
-    // ? Message de copyright
-    console.log(`%cDesigned and implemented by Martin OCHO. \nFor more information, please visit my GitHub profile: https://github.com/OchoKOM/. \nAll rights reserved, 2024.`, 'color: dodgerblue; font-size: 15px;');
-    console.log('%cConçu et réalisé par Martin OCHO. \nPour plus d\'informations, veuillez visiter mon profil GitHub : https://github.com/OchoKOM/. \nTous droits réservés, 2024.', 'color: dodgerblue; font-size: 15px;');
-
 
     if (currentUser.user_id) {
         UpdateConectedUser(currentUser);
