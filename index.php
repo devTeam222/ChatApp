@@ -6,14 +6,9 @@ require_once('./config/config.php');
 ?>
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./theme/style.css">
-    <link rel="icon" href="./assets/icon.svg" type="image/svg+xml" media="(prefers-color-scheme:light)">
-    <link rel="icon" href="./assets/icon-dark.svg" type="image/svg+xml" media="(prefers-color-scheme:dark)">
-    <title>ChatApp</title>
-</head>
+<?php
+include('./partials/_head.php');
+?>
 <body>
     <?php
     include('./partials/_navbar.php');
