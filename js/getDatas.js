@@ -195,9 +195,6 @@ function getLastMessages() {
 
                         sessionStorage.setItem('current_users', "");
                         sessionStorage.setItem('current_users', JSON.stringify(response.users));
-                        // setTimeout(() => {
-                        //     sessionStorage.clear();
-                        // }, 20000);
                         resolve(response);
                     } catch (error) {
                         console.warn(error);
