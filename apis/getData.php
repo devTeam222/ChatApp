@@ -1,85 +1,6 @@
 <?php
 require_once('../config/config.php');
 
-class User
-{
-    public $data;
-
-    // Constructeur de la classe
-    public function __construct($array = [])
-    {
-        $this->data = $array;
-    }
-    // Fonction membre de la classe
-    public function getData()
-    {
-        if (!count($this->data)) {
-            return;
-        }
-        $result = [
-            "user_id" => $this->data['id'],
-            "username" => $this->data['fullnames'],
-            "name" => $this->data['username'],
-            "profile_img" => "./assets/image.php?id=" . $this->data['image_file'],
-            "last_seen" => $this->data['lastseen'],
-        ];
-        return $result;
-    }
-}
-
-class Message
-{
-    public $data;
-
-    // Constructeur de la classe
-    public function __construct($array = [])
-    {
-        $this->data = $array;
-    }
-    // Fonction membre de la classe
-    public function getData()
-    {
-        if (!count($this->data)) {
-            return;
-        }
-        $result = [
-            "id" => +$this->data['id'],
-            "content" => $this->data['type'] != 'text'
-                ? "./assets/file.php?id=" . $this->data['content']
-                : $this->data['content'],
-            "from" => $this->data['from'],
-            "to" => $this->data['to'],
-            "type" => $this->data['type'],
-            "date" => $this->data['date'],
-            "status" => $this->data['status'],
-        ];
-        return $result;
-    }
-}
-
-class LastMessages
-{
-    public $data;
-    public function __construct($array = [])
-    {
-        $this->data = $array;
-    }
-    public function getData()
-    {
-        if (!count($this->data)) {
-            return;
-        }
-        $result = [
-            "user" => $this->data['id'],
-            "content" => $this->data['content'],
-            "date" => $this->data['date'],
-            "unread" => $this->data['unread'],
-            "type" => $this->data['type'],
-        ];
-        return $result;
-    }
-}
-
 class GetData
 {
     private $db;
@@ -121,8 +42,8 @@ class GetData
     private function getUnreadMessages($id)
     {
         $chat = $id;
-        $get_messages = $this->db->prepare("SELECT * FROM `messages` WHERE (`from` = ? AND `to` = ? AND NOT `status` = ?) ORDER BY `date` DESC");
-        $get_messages->execute([$chat, $this->myId, 1]);
+        $get_messages = $this->db->prepare("SELECT * FROM `messages` WHERE (`conversation` = ? AND NOT `status` = ?) ORDER BY `date` DESC");
+        $get_messages->execute([$chat, 1]);
         $result = $get_messages->rowCount();
         return $result;
     }
@@ -133,12 +54,22 @@ class GetData
         }
         $chat = $this->data['chat'];
 
+        // ! Verifier s'il y a deja une conversation en cours sinon en creer une 
+        $get_conversation = $this->db->prepare("SELECT * FROM `conversation` WHERE (`creator` = ? AND `to_user` = ?) OR (`creator` = ? AND `to_user` = ?)");
+        $get_conversation->execute([$chat, $this->myId, $this->myId, $chat]);
+        if($get_conversation->rowCount()){
+            $conversation = $get_conversation->fetch();
+            $to_user = $conversation['to_user'];
+        }else{
+            $create_conversation = $this->db->prepare("INSERT INTO `conversation` (`creator`, `to_user`, `date`) VALUES(?, ?, ?)");
+            $create_conversation->execute([$this->myId, $chat, time()]);
+        }
 
-        $get_messages = $this->db->prepare("SELECT * FROM `messages` WHERE ( `from` = ? AND `to` = ? ) OR ( `from` = ? AND `to` = ? ) ORDER BY `date` DESC");
-        $get_messages->execute([$chat, $this->myId, $this->myId, $chat]);
+        $get_messages = $this->db->prepare("SELECT * FROM `messages` WHERE `conversation` = ? ORDER BY `date` DESC");
+        $get_messages->execute([$chat]);
         $result = [];
         while ($message = $get_messages->fetch()) {
-            if ($message['to'] == $this->myId) {
+            if (isset($to_user) && $to_user == $this->myId) {
                 $update_message = $this->db->prepare("UPDATE `messages` SET `status` = ? WHERE id = ?");
                 $update_message->execute([1, $message['id']]);
             }
@@ -163,38 +94,42 @@ class GetData
         $this->updateUserActivity($this->myId);
         $last_messages = [];
         $chats = [];
-        $get_all_messages = $this->db->prepare("SELECT * FROM `messages`  WHERE (`from` = ? OR `to` = ? )  ORDER BY `date` DESC");
-        $get_all_messages->execute([$this->myId, $this->myId]);
+        $get_conversations = $this->db->prepare("SELECT * FROM `conversation`  WHERE (`creator` = ? OR `to_user` = ? )  ORDER BY `date` DESC");
+        $get_conversations->execute([$this->myId, $this->myId]);
 
-        while ($message = $get_all_messages->fetch()) {
-            if ($message['status'] != 1) {
-                $update_message = $this->db->prepare("UPDATE `messages` SET `status` = ? WHERE id = ? AND `to` = ?");
-                $update_message->execute([2, $message['id'], $this->myId]);
-            }
+        while ($conversation = $get_conversations->fetch()) {
+            $conversation_id = $conversation['id'];
+            $get_last_message = $this->db->prepare("SELECT * FROM `messages`  WHERE `conversation` = ?   ORDER BY `date` DESC LIMIT 1");
+            $get_last_message->execute([$conversation_id]);
 
-
-            $chat = ($message['from'] == $this->myId) ? $message['to'] : $message['from'];
-
-            $unread_messages = $this->getUnreadMessages($chat);
-
-            $content = ($message['from'] == $this->myId) ? "Vous: " . $message['content'] : $message['content'];
-            $content = (strlen($content) > 35) ? substr($content, 0, 35) . "..." : $content;
-
-            $attachmentText = ($message['from'] == $this->myId) ? "Vous avez envoyé une photo" : "Vous a envoyé une photo";
-
-            $content = ($message['type'] != "text") ? $attachmentText : $content;
-            $array = [
-                "id" => $chat,
-                "content" => $content,
-                "date" => $message['date'],
-                "type" => $message['type'],
-                "unread" => $unread_messages,
-            ];
-
-            $object = new LastMessages($array);
-            if (!in_array($chat, $chats)) {
-                $chats[] = $chat;
-                $last_messages[] = $object->getData();
+            if ($get_last_message->rowCount()) {
+                $message = $get_last_message->fetch();
+                if ($message['status'] != 1) {
+                    $update_message = $this->db->prepare("UPDATE `messages` SET `status` = ? WHERE id = ?");
+                    $update_message->execute([2, $message['id']]);
+                }
+    
+                $unread_messages = $this->getUnreadMessages($conversation_id);
+    
+                $content = ($message['from'] == $this->myId) ? "Vous: " . $message['content'] : $message['content'];
+                $content = (strlen($content) > 35) ? substr($content, 0, 35) . "..." : $content;
+    
+                $attachmentText = ($message['from'] == $this->myId) ? "Vous avez envoyé une photo" : "Vous a envoyé une photo";
+    
+                $content = ($message['type'] != "text") ? $attachmentText : $content;
+                $array = [
+                    "id" => $conversation_id,
+                    "content" => $content,
+                    "date" => $message['date'],
+                    "type" => $message['type'],
+                    "unread" => $unread_messages,
+                ];
+    
+                $object = new LastMessages($array);
+                if (!in_array($conversation_id, $chats)) {
+                    $chats[] = $conversation_id;
+                    $last_messages[] = $object->getData();
+                }
             }
         }
         $response = [];

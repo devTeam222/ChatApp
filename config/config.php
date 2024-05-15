@@ -31,3 +31,82 @@ if (isset($_SESSION['auth'])) {
         $_SESSION['avatar'] = "./assets/image.php?id=".$user_data['image_file'];
     }
 }
+
+class User
+{
+    public $data;
+
+    // Constructeur de la classe
+    public function __construct($array = [])
+    {
+        $this->data = $array;
+    }
+    // Fonction membre de la classe
+    public function getData()
+    {
+        if (!count($this->data)) {
+            return;
+        }
+        $result = [
+            "user_id" => $this->data['id'],
+            "username" => $this->data['fullnames'],
+            "name" => $this->data['username'],
+            "profile_img" => "./assets/image.php?id=" . $this->data['image_file'],
+            "last_seen" => $this->data['lastseen'],
+        ];
+        return $result;
+    }
+}
+
+class Message
+{
+    public $data;
+
+    // Constructeur de la classe
+    public function __construct($array = [])
+    {
+        $this->data = $array;
+    }
+    // Fonction membre de la classe
+    public function getData()
+    {
+        if (!count($this->data)) {
+            return;
+        }
+        $result = [
+            "id" => +$this->data['id'],
+            "content" => $this->data['type'] != 'text'
+                ? "./assets/file.php?id=" . $this->data['content']
+                : $this->data['content'],
+            "from" => $this->data['from'],
+            "to" => $this->data['conversation'],
+            "type" => $this->data['type'],
+            "date" => $this->data['date'],
+            "status" => $this->data['status'],
+        ];
+        return $result;
+    }
+}
+
+class LastMessages
+{
+    public $data;
+    public function __construct($array = [])
+    {
+        $this->data = $array;
+    }
+    public function getData()
+    {
+        if (!count($this->data)) {
+            return;
+        }
+        $result = [
+            "user" => $this->data['id'],
+            "content" => $this->data['content'],
+            "date" => $this->data['date'],
+            "unread" => $this->data['unread'],
+            "type" => $this->data['type'],
+        ];
+        return $result;
+    }
+}

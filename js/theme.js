@@ -13,9 +13,5 @@ function refreshCSS() {
         parent.appendChild(elem);
     }
 }
-console.log(`%cDesigned and implemented by Martin OCHO. 
-For more information, please visit my GitHub profile: https://github.com/OchoKOM/. 
-All rights reserved, 2024.`, 'color: dodgerblue; font-size: 20px;');
-console.log('%cConçu et réalisé par Martin OCHO. Pour plus d\'informations, veuillez visiter mon profil GitHub : https://github.com/OchoKOM/. Tous droits réservés, 2024.', 'color: dodgerblue; font-size: 20px;');
 
 // refreshCSS();
