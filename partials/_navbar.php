@@ -1,9 +1,9 @@
 <?php
 if (isset($_SESSION['auth'])) {
 ?>
-    <nav class="main-nav">
-        <div class="overlay toggle-menu"></div>
-        <h1 class="logo">
+    <nav class="main-nav pos-sticky inset-0 d-flex flex-column gap-1em">
+        <div class="overlay toggle-menu pos-fixed w-100v h-100v inset-0"></div>
+        <h1 class="logo d-flex items-center cursor-pointer">
             <span class="icon toggle-menu" title="Afficher le menu">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-heart">
                     <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
@@ -19,7 +19,7 @@ if (isset($_SESSION['auth'])) {
                 </svg>
             </div>
         </h1>
-        <ul class="user-nav" title="Profil">
+        <ul class="user-nav d-flex flex-column" title="Profil">
             <li class="profile-picture connected-user">
                 <img src="#" alt="">
                 <svg width="5em" height="5em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round">
@@ -33,7 +33,7 @@ if (isset($_SESSION['auth'])) {
                 <div class="username"></div>
             </li>
         </ul>
-        <ul class="top">
+        <ul class="top d-flex flex-column">
             <li>
                 <a href="./">
                     <span class="icon">
@@ -58,7 +58,7 @@ if (isset($_SESSION['auth'])) {
                 </a>
             </li>
         </ul>
-        <ul class="bottom">
+        <ul class="bottom d-flex flex-column">
             <li>
                 <a href="javascript:openSettings()">
                     <span class="icon">

@@ -38,7 +38,7 @@ include('./partials/_head.php');
                             </button>
                         </form>
                     </header>
-                    <ul class="messages-list loading" id="new-chat-list">
+                    <ul class="messages-list loading d-flex flex-column user-select-none" id="new-chat-list">
                     </ul>
                 </section>
                 <header>
@@ -50,7 +50,7 @@ include('./partials/_head.php');
                                 <line x1="4" x2="20" y1="18" y2="18" />
                             </svg>
                         </div>
-                        <h2 class="logo">
+                        <h2 class="logo d-flex items-center cursor-pointer">
                             <span class="icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-heart">
                                     <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
@@ -85,12 +85,12 @@ include('./partials/_head.php');
                         </button>
                     </form>
                 </header>
-                <ul class="messages-list loading" id="message-list"></ul>
+                <ul class="messages-list loading d-flex flex-column user-select-none" id="message-list"></ul>
             </aside>
             <section class="chat-window">
                 <header>
                     <nav class="connected-user">
-                        <h2 class="logo">
+                        <h2 class="logo d-flex items-center cursor-pointer">
                             <span class="icon">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-heart">
                                     <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
