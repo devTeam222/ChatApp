@@ -223,6 +223,18 @@ function updateTextareas() {
         textarea.addEventListener("input", () => {
             textarea.parentNode.style.setProperty('--height', "auto");
             textarea.parentNode.style.setProperty('--height', textarea.scrollHeight + "px");
+            if (textarea.value.trim() !== '') {
+                textarea.classList.remove('empty');
+            }else{
+                textarea.classList.add('empty');
+            }
+        })
+        textarea.addEventListener("focus", () => {
+            if (textarea.value.trim() !== '') {
+                textarea.classList.remove('empty');
+            }else{
+                textarea.classList.add('empty');
+            }
         })
         textarea.addEventListener("blur", () => {
             let scrollH = textarea.scrollHeight;
@@ -336,17 +348,17 @@ async function displayMessages(id, messageList = false) {
     const chatBox = document.querySelector('.chat-body');
     const messages = !!messageList ? messageList : await getMessages(id);
     const formboxHTML = `
-    <div class="image-preview" id="image-preview">
+    <div class="image-preview d-flex items-center justify-center" id="image-preview">
         <img src="" alt="">
         <div class="buttons">
-            <button type="reset" form="image-form" title="Annuler">
+            <button type="reset" form="file-form" title="Annuler">
                 <span>Annuler</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x">
                     <path d="M18 6 6 18" />
                     <path d="m6 6 12 12" />
                 </svg>
             </button>
-            <button type="submit" form="image-form" title="Envoyer">
+            <button type="submit" form="file-form" title="Envoyer">
                 <span>Envoyer</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send">
                     <path d="m22 2-7 20-4-9-9-4Z" />
@@ -356,34 +368,45 @@ async function displayMessages(id, messageList = false) {
 
         </div>
     </div>
+    <form class="file-form d-grid place-items-center" id="file-form">
+        <label class="camera-input" title="Prendre une photo">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                <circle cx="12" cy="13" r="3"/>
+            </svg>
+            <input type="file" name="camera" id="camera-input" class="hidden-input" accept="image/*" capture>
+        </label>
+        <label title="Importer une photo">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image">
+                <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+                <circle cx="9" cy="9" r="2" />
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+            </svg>
+            <input type="file" name="image" id="image-input" class="hidden-input" accept="image/*">
+        </label>
+    </form>
+    <section class="attachment-toggle mobile d-flex items-center justify-center cursor-pointer">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus">
+            <path d="M5 12h14"></path>
+            <path d="M12 5v14"></path>
+        </svg>
+    </section>
     <section class="send-message">
+        <section class="attachment-toggle desktop d-flex items-center justify-center cursor-pointer">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-paperclip">
+                <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+            </svg>
+        </section>
         <form method="post" id="message-form">
             <textarea name="message" required placeholder="Ecrivez un message..." rows="1"></textarea>
         </form>
-        <form class="image-form" id="image-form">
-            <label title="Importer une photo">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-image">
-                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
-                    <circle cx="9" cy="9" r="2" />
-                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
-                </svg>
-                <input type="file" name="image" id="image-input" class="hidden-input" accept="image/*">
-            </label>
-            <label class="camera-input" title="Prendre une photo">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera">
-                    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
-                    <circle cx="12" cy="13" r="3"/>
-                </svg>
-                <input type="file" name="camera" id="camera-input" class="hidden-input" accept="image/*" capture>
-            </label>
-        </form>
+        <button type="submit" title="Envoyer" form="message-form" class="message-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send">
+                <path d="m22 2-7 20-4-9-9-4Z" />
+                <path d="M22 2 11 13" />
+            </svg>
+        </button>
     </section>
-    <button type="submit" title="Envoyer" form="message-form" class="message-btn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send">
-            <path d="m22 2-7 20-4-9-9-4Z" />
-            <path d="M22 2 11 13" />
-        </svg>
-    </button>
     `
     const formbox = document.querySelector('.container .form-box');
     if (formbox.querySelector('.loader')) {
@@ -462,12 +485,25 @@ function displayTime(time, element = null) {
 }
 
 function MessageForms() {
-    const imageForm = document.getElementById('image-form');
+    const fileForm = document.getElementById('file-form');
     const imagePreview = document.getElementById('image-preview');
-    const imageInputs = imageForm.querySelectorAll('input');
+    const fileInputs = fileForm.querySelectorAll('input');
+    const attachmentToggles = document.querySelectorAll('.attachment-toggle');
     const messageForm = document.getElementById('message-form');
     const messageTextarea = messageForm.querySelector('textarea');
 
+    attachmentToggles.forEach(toggle=>{
+        toggle.addEventListener('click', ()=>{
+            if (fileForm) {
+                fileForm.classList.toggle('active');
+            }
+        })
+    });
+    messageTextarea.addEventListener('focus',()=>{
+        if (fileForm) {
+            fileForm.classList.remove('active');
+        }
+    })
     messageForm.addEventListener('submit', e => {
         e.preventDefault();
         if (messageTextarea.value.trim() === '') {
@@ -483,9 +519,9 @@ function MessageForms() {
         messageForm.reset();
     })
 
-    imageInputs.forEach(input => {
+    fileInputs.forEach(input => {
         input.addEventListener('focus', () => {
-            imageForm.reset();
+            fileForm.reset();
         });
         input.addEventListener('input', () => {
             // Vérifiez si un fichier a été sélectionné
@@ -501,7 +537,7 @@ function MessageForms() {
             if (!file.type.startsWith('image/')) {
                 return;
             }
-
+            fileForm.classList.remove('active');
             // Créez une URL pour le fichier en utilisant l'API URL.createObjectURL
             const imageUrl = URL.createObjectURL(file);
             const imageElement = imagePreview.querySelector('img');
@@ -511,14 +547,14 @@ function MessageForms() {
             imagePreview.classList.add('active');
         });
     })
-    imageForm.addEventListener('reset', () => {
+    fileForm.addEventListener('reset', () => {
         const imageElement = imagePreview.querySelector('img');
         imagePreview.classList.remove('active');
         imageElement.setAttribute('src', "");
     })
-    imageForm.addEventListener('submit', e => {
+    fileForm.addEventListener('submit', e => {
         e.preventDefault();
-        imageInputs.forEach(input => {
+        fileInputs.forEach(input => {
             // Vérifiez si un fichier a été sélectionné
             if (!input.files || input.files.length === 0) {
                 return;
@@ -543,7 +579,7 @@ function MessageForms() {
             imagePreview.classList.remove('active');
 
             SendMessage({ content, type, formData })
-            imageForm.reset();
+            fileForm.reset();
         })
     })
 }

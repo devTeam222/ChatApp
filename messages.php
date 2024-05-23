@@ -140,7 +140,7 @@ include('./partials/_head.php');
                     </header>
                     <section class="chat-body">
                     </section>
-                    <div class="form-box">
+                    <div class="form-box d-flex items-end">
                         <div class="loader"></div>
                     </div>
                 </section>

@@ -1052,8 +1052,6 @@ img[src=""] {
 .form-box {
     flex-grow: 1;
     position: relative;
-    display: flex;
-    align-items: center;
     gap: .5em;
     padding: .5em;
     background: #3990c734;
@@ -1083,12 +1081,9 @@ img[src=""] {
     width: 100%;
   }
 }
-.image-preview {
+.image-preview, .file-form {
     position: absolute;
     left: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: 0;
     width: 100%;
     bottom: -20em;
@@ -1099,7 +1094,8 @@ img[src=""] {
     z-index: 2;
 }
 
-.image-preview.active {
+.image-preview.active,
+.file-form.active {
     max-height: 20em;
     height: 20em;
     padding: .5em;
@@ -1107,7 +1103,27 @@ img[src=""] {
     bottom: 100%;
     visibility: visible;
 }
-
+.file-form{
+    pointer-events: none;
+    bottom: .3em;
+    left: .3em;
+    width: 0;
+    border-radius: 50%;
+    transition: border-radius 300ms ease-in, 
+                height 300ms ease-in, 
+                width 300ms ease-in,
+                bottom 300ms ease-in;
+}
+.file-form.active {
+    pointer-events: all;
+    left: 0;
+    width: 100%;
+    border-radius: 1em;
+    transition: border-radius 300ms ease-out, 
+                height 300ms ease-out, 
+                width 300ms ease-out,
+                bottom 300ms ease-out;
+}
 .image-preview img {
     object-fit: contain;
     height: auto;
@@ -1142,26 +1158,38 @@ img[src=""] {
     border-radius: 1.5em;
     box-shadow: 0 0 10px;
 }
-
-.form-box .image-form {
+.attachment-toggle{
+    width: 2.25em;
+    min-width: 2.25em;
+    border-radius: 50%;
+    aspect-ratio: 1;
+}
+.attachment-toggle.mobile{
+    background: var(--text-color);
+    color: var(--primary-color);
+    margin-bottom: .2em;
+    position: absolute;
+    visibility: hidden;
+}
+/* .form-box .file-form {
     position: relative;
     top: 0;
-    right: 0;
+    left: 0;
     display: flex;
     align-items: center;
     gap: .7em;
     transition: 200ms ease;
     padding: 0 .7em;
     opacity: 1;
-}
+} */
 
-.form-box:has(textarea:focus) .image-form {
+/* .form-box:has(textarea:focus) .file-form {
     position: absolute;
     opacity: 0;
     visibility: hidden;
-}
+} */
 
-.form-box .image-form label {
+.form-box .file-form label {
     cursor: pointer;
 }
 
@@ -1175,11 +1203,11 @@ img[src=""] {
 
 .send-message {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     min-height: 2.2em;
     width: 100%;
-    padding: .2em 0;
-    border-radius: 1.2em;
+    padding: .2em;
+    border-radius: 1.4em;
     border: 1px solid #8080807c;
     position: relative;
     height: auto;
@@ -1192,7 +1220,6 @@ img[src=""] {
 .send-message textarea {
     font-size: .95em;
     position: relative;
-    flex-grow: 1;
     height: 1.75em;
     min-height: 1.75em;
     line-height: 1.3;
@@ -1200,7 +1227,7 @@ img[src=""] {
     max-height: 11em;
     border-top-left-radius: inherit;
     border-bottom-left-radius: inherit;
-    padding: .2em 1em;
+    padding: .2em;
     word-break: break-all;
     overflow-y: hidden;
     resize: none;
@@ -1220,11 +1247,16 @@ img[src=""] {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 3em;
-    min-width: 3em;
+    width: 2.7em;
+    min-width: 2.7em;
     aspect-ratio: 1;
     background: #1e90ff;
-    box-shadow: 0 0 10px #808080da;
+    /* box-shadow: 0 0 10px #808080da; */
+}
+.form-box:has(textarea:invalid) .message-btn,
+.form-box:has(textarea.empty) .message-btn {
+    pointer-events: none;
+    background: #80808041;
 }
 
 .modal-overlay {
@@ -1711,11 +1743,16 @@ img[src=""] {
     .message-content .image.full {
         transform: translateX(100%);
     }
-
+    .attachment-toggle.mobile{
+        position: relative;
+        visibility: visible;
+    }
     .camera-input {
         display: initial;
     }
-
+    .send-message textarea {
+        padding-left: 1em;
+    }
     .context-menu {
         top: auto;
         bottom: -100%;
