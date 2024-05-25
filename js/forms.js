@@ -1,8 +1,6 @@
 import { 
     createAvatar, 
-    resizeAndCropImage, 
-    refreshImages 
-} from "./images.js";
+    resizeAndCropImage} from "./images.js";
 import { modalDialog } from "./navigation.js";
 
 // ! Recevoir les formulaires

@@ -8,7 +8,7 @@ class MessageVerifier {
     }
 
     verifyData() {
-        const { photo, username, timestamp, content, isNew } = this.data;
+        const { id, photo, username, timestamp, content, isNew } = this.data;
 
         // Vérifie si toutes les données nécessaires sont présentes
         return (photo && username && timestamp && (content || isNew));
@@ -22,8 +22,8 @@ class MessageVerifier {
         if (!this.verifyData) {
             return false;
         }
-        const { photo, username, timestamp, content } = this.data;
-        return { photo, username, timestamp, content };
+        const { id, photo, username, timestamp, content } = this.data;
+        return { id, photo, username, timestamp, content };
     }
     generatePreviewHTML() {
         if (!this.verifyData() || this.exists && !this.exists.new) {
@@ -89,6 +89,7 @@ function getAvailableUsers() {
                 if (xhr.status === 200) {
                     try {
                         let data = JSON.parse(xhr.response);
+                        console.log(data);
                         resolve(data)
                     } catch (error) {
                         console.warn(error);
@@ -137,9 +138,6 @@ function getCurrentUser() {
 }
 
 function getLastMessages() {
-
-    const currentMessages = sessionStorage.getItem('current_messages')
-        ? JSON.parse(sessionStorage.getItem('current_messages')) : [];
     return new Promise((resolve, reject) => {
         let xhr = new XMLHttpRequest();
         xhr.open('POST', './apis/getData.php');
@@ -157,44 +155,9 @@ function getLastMessages() {
                             resolve(data);
                             return;
                         }
-                        const newMessages = data.last_messages;
-                        const uniqueMessages = {};
-
-                        currentMessages.forEach(message => {
-                            const userId = message.user;
-                            if (!uniqueMessages[userId]) {
-                                uniqueMessages[userId] = message;
-                            }
-                        });
-
-                        const uniqueMessagesArray = Object.values(uniqueMessages);
-                        for (let i = 0; i < uniqueMessagesArray.length; i++) {
-                            const message = uniqueMessagesArray[i];
-                            for (let j = 0; j < newMessages.length; j++) {
-                                const msg = newMessages[j];
-                                if (msg.user == message.user && msg.date != message.date) {
-                                    uniqueMessagesArray[i] = msg;
-                                }
-                                
-                            }
-                        }
-                        const lastMessages = [...uniqueMessagesArray, ...data.last_messages];
-                        const uniqueLastMessages = {};
-                        lastMessages.forEach(message => {
-                            const userId = message.user;
-                            if (!uniqueLastMessages[userId]) {
-                                uniqueLastMessages[userId] = message;
-                            }
-                        });
-
-                        const uniqueLastMessagesArray = Object.values(uniqueLastMessages);
-                        response.last_messages = uniqueLastMessagesArray;
-                        response.users = !!(response.last_messages.length) ? await getLastUsers() : {};
-                        sessionStorage.setItem('current_messages', "");
-                        sessionStorage.setItem('current_messages', JSON.stringify(response.last_messages));
-
-                        sessionStorage.setItem('current_users', "");
-                        sessionStorage.setItem('current_users', JSON.stringify(response.users));
+                        const lastMessages = data.last_messages;
+                        response.users = await getConversationUsers();
+                        response.last_messages = lastMessages;
                         resolve(response);
                     } catch (error) {
                         console.warn(error);
@@ -217,9 +180,7 @@ function getLastMessages() {
     })
 }
 
-function getLastUsers() {
-    const currentUsers = sessionStorage.getItem('current_users')
-        ? JSON.parse(sessionStorage.getItem('current_users')) : {};
+function getConversationUsers() {
     return new Promise((resolve, reject) => {
         let xhr = new XMLHttpRequest();
         xhr.open('POST', './apis/getData.php');
@@ -228,18 +189,11 @@ function getLastUsers() {
                 if (xhr.status === 200) {
                     try {
                         let data = JSON.parse(xhr.response).users;
-
                         if (data.session_error) {
                             resolve(data);
                             return;
                         }
-                        for (const user_id in data) {
-                            if (Object.hasOwnProperty.call(data, user_id)) {
-                                const user = data[user_id];
-                                currentUsers[user_id] = user;
-                            }
-                        }
-                        const response = currentUsers;
+                        const response = data;
                         resolve(response);
                     } catch (error) {
                         console.warn(error);
@@ -252,9 +206,11 @@ function getLastUsers() {
                 }
             }
         };
-
+        xhr.onerror = (e)=>{
+            console.log(e);
+        }
         let form_data = new FormData();
-        form_data.append("get_lastusers", true);
+        form_data.append("conversation_name", true);
         xhr.send(form_data);
     })
 }
@@ -268,7 +224,7 @@ function getMessages(chat) {
                 if (xhr.status === 200) {
                     try {
                         let data = JSON.parse(xhr.response);
-                        resolve(data);
+                        resolve(data.messages);
                     } catch (error) {
                         console.warn(error);
                         console.warn(xhr.response);

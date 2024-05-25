@@ -347,3 +347,19 @@
 .cursor-pointer{
     cursor: pointer;
 }
+/* Scrollbar */
+.custom-scrollbar::-webkit-scrollbar,
+.custom-scrollbar ::-webkit-scrollbar{
+    -webkit-appearance: none;
+    appearance: none;
+    width: 8px;
+    height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.custom-scrollbar ::-webkit-scrollbar-thumb{
+    -webkit-appearance: none;
+    appearance: none;
+    background: #80808041;
+    border-radius: 5px;
+    cursor: default;
+}

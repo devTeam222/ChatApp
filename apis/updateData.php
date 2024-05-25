@@ -1,59 +1,6 @@
 <?php
 require_once('../config/config.php');
 
-class User
-{
-    public $data;
-
-    // Constructeur de la classe
-    public function __construct($array = [])
-    {
-        $this->data = $array;
-    }
-    // Fonction membre de la classe
-    public function getData()
-    {
-        if (!count($this->data)) {
-            return;
-        }
-        $result = [
-            "user_id" => $this->data['id'],
-            "username" => $this->data['fullnames'],
-            "profile_img" => $this->data['image_file'],
-            "last_seen" => $this->data['lastseen'],
-        ];
-        return $result;
-    }
-}
-
-class Message
-{
-    public $data;
-
-    // Constructeur de la classe
-    public function __construct($array = [])
-    {
-        $this->data = $array;
-    }
-    // Fonction membre de la classe
-    public function getData()
-    {
-        if (!count($this->data)) {
-            return;
-        }
-        $result = [
-            "id" => $this->data['id'],
-            "content" => $this->data['content'],
-            "from" => $this->data['from'],
-            "to" => $this->data['to'],
-            "type" => $this->data['type'],
-            "date" => $this->data['date'],
-            "status" => $this->data['status'],
-        ];
-        return $result;
-    }
-}
-
 class UpdateData
 {
     private $db;

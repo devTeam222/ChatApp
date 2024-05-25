@@ -114,9 +114,10 @@ class SendData
         }
 
         // ! Declarer les donnees a envoyer puis les inserer dans la base des donnees
-        $data_to_send = [$this->myId, $conversation_id, $content, $this->data['type'], $date];
+        $data_to_send = [$this->myId, $conversation_id, $content, $this->data['type'], $date, 0];
 
-        $send_message = $this->db->prepare("INSERT INTO `messages` (`from`, `conversation`,`content`, `type`, `date`) VALUES(?, ?, ?, ?, ?)");
+        $send_message = $this->db->prepare("INSERT INTO `messages` (`from`, `conversation`,`content`, `type`, `date`, `status`) VALUES(?,  ?, ?, ?, ?, ?)");
+
         // Insert new message into database
         if ($send_message->execute($data_to_send)) {
             return [

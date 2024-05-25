@@ -1,16 +1,16 @@
 import { TimeFormatter, NumberFormatter } from "../formatters.js";
 import { refreshImages } from "../images.js";
 import { sessionError, serverError } from "../index.js"
-import { 
-    currentUser, 
-    MessageVerifier, 
-    getAvailableUsers, 
-    getLastMessages, 
-    detecterLiVisibles, 
-    getMessages, 
-    UploadMessage, 
-    deleteMessage, 
-    download 
+import {
+    currentUser,
+    MessageVerifier,
+    getAvailableUsers,
+    getLastMessages,
+    detecterLiVisibles,
+    getMessages,
+    UploadMessage,
+    deleteMessage,
+    download
 } from '../getDatas.js'
 let currentChat;
 
@@ -26,7 +26,9 @@ async function App() {
         addNewChat();
     }
 }
-
+function createChat(id = null) {
+    
+}
 async function RenderLastMessages() {
     refreshImages();
     const container = document.querySelector(".container");
@@ -89,7 +91,7 @@ async function RenderLastMessages() {
             ]
             const { photo, username, lastSeen, chat_id } = user_data;
             const period = Math.floor((Date.now() / 1000) - lastSeen);
-            currentChat = chat_id;
+            currentChat = data.id;
             const formattedLastSeen = (period > (30 * 24 * 3600)) ? ('Derniere activitée ' + new TimeFormatter(lastSeen).formatTime())
                 : (period > 60 ? ('Enligne il y a ' + new NumberFormatter(period).formatTime())
                     : "Enligne récemment");
@@ -125,6 +127,7 @@ async function RenderLastMessages() {
             await newInChatlist(messageData.element, chat.unread, exists);
             messageData.element.addEventListener("click", (e) => {
                 e.preventDefault();
+                const newChatId = messageData.validData.id;
                 removeActiveChats();
                 currentChat = user.user_id;
                 messageData.element.classList.add("active");
@@ -132,8 +135,8 @@ async function RenderLastMessages() {
                 formbox.innerHTML = `<div class="loader"></div>`
 
                 container.classList.add("active");
-                container.setAttribute('data-chat', user.user_id)
-                const user_data = { photo: `${user.profile_img}`, username: user.username, name: user.name, lastSeen: user.last_seen, chat_id: user.user_id };
+                container.setAttribute('data-chat', newChatId)
+                const user_data = { id: newChatId, photo: `${user.profile_img}`, username: user.username, name: user.name, lastSeen: user.last_seen, chat_id: user.user_id };
                 openMessage(user_data);
             })
         }
@@ -225,14 +228,14 @@ function updateTextareas() {
             textarea.parentNode.style.setProperty('--height', textarea.scrollHeight + "px");
             if (textarea.value.trim() !== '') {
                 textarea.classList.remove('empty');
-            }else{
+            } else {
                 textarea.classList.add('empty');
             }
         })
         textarea.addEventListener("focus", () => {
             if (textarea.value.trim() !== '') {
                 textarea.classList.remove('empty');
-            }else{
+            } else {
                 textarea.classList.add('empty');
             }
         })
@@ -300,11 +303,13 @@ function addNewChat() {
                 messageData.element.addEventListener("click", (e) => {
                     e.preventDefault();
                     removeActiveChats();
+                    const newChatId = messageData.validData.id;
+                    console.log(messageData.validData);
                     messageData.element.classList.add("active");
                     newChatDialog.classList.remove('active');
                     container.classList.add("active");
-                    container.setAttribute('data-chat', user.user_id)
-                    const user_data = { photo: `${user.profile_img}`, username: user.username, name: user.name, lastSeen: user.last_seen, chat_id: user.user_id };
+                    container.setAttribute('data-chat', newChatId);
+                    const user_data = { id:newChatId , photo: `${user.profile_img}`, username: user.username, name: user.name, lastSeen: user.last_seen, chat_id: user.user_id };
                     openMessage(user_data);
                 })
             });
@@ -324,8 +329,8 @@ function openMessage(user_data) {
         document.querySelector('.chat-box .user-profile .status'),
         document.querySelector('.chat-box .chat-data .status')
     ]
-    const { photo, username, name, lastSeen, chat_id } = user_data;
-    currentChat = chat_id;
+    const { id, photo, username, name, lastSeen, chat_id } = user_data;
+    currentChat = id;
     const period = Math.floor((Date.now() / 1000) - lastSeen);
     const formattedLastSeen = (period > (30 * 24 * 3600)) ? ('Derniere activitée ' + new TimeFormatter(lastSeen).formatTime())
         : (period > 60 ? ('Enligne il y a ' + new NumberFormatter(period).formatTime())
@@ -341,8 +346,8 @@ function openMessage(user_data) {
 
     chat_box.innerHTML = `
     <section class="unopened loading"></section>
-    `
-    displayMessages(chat_id);
+    `;
+    displayMessages(id);
 }
 async function displayMessages(id, messageList = false) {
     const chatBox = document.querySelector('.chat-body');
@@ -397,7 +402,7 @@ async function displayMessages(id, messageList = false) {
                 <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
             </svg>
         </section>
-        <form method="post" id="message-form">
+        <form method="post" class="custom-scrollbar" id="message-form">
             <textarea name="message" required placeholder="Ecrivez un message..." rows="1"></textarea>
         </form>
         <button type="submit" title="Envoyer" form="message-form" class="message-btn">
@@ -492,14 +497,12 @@ function MessageForms() {
     const messageForm = document.getElementById('message-form');
     const messageTextarea = messageForm.querySelector('textarea');
 
-    attachmentToggles.forEach(toggle=>{
-        toggle.addEventListener('click', ()=>{
-            if (fileForm) {
-                fileForm.classList.toggle('active');
-            }
+    attachmentToggles.forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            fileForm.classList.toggle('active');
         })
     });
-    messageTextarea.addEventListener('focus',()=>{
+    messageTextarea.addEventListener('focus', () => {
         if (fileForm) {
             fileForm.classList.remove('active');
         }
@@ -613,9 +616,20 @@ async function SendMessage(message) {
             image_att.classList.toggle('full');
         });
     }
-    const message_data = await UploadMessage(formData);
-    messageContainer.id = message_data.id;
     const message_status = messageContainer.querySelector('.message-status');
+    const message_data = await UploadMessage(formData);
+    if (!message_data.id) {
+        messageContainer.classList.add('error');
+        messageContainer.setAttribute('title', "Réessayer");
+        message_status.textContent = "Impossible d'envoyer";
+        messageContainer.addEventListener('click', ()=>{
+            SendMessage(message);
+        })
+        return;
+    }
+    messageContainer.setAttribute('title', "");
+    messageContainer.classList.remove('error');
+    messageContainer.id = message_data.id;
     message_status.textContent = "Envoyé";
     setTimeout(() => {
         messageContainer.classList.remove('loading');
@@ -627,6 +641,11 @@ async function SendMessage(message) {
                 chatBox.insertBefore(document.createElement('spacer'), messageContainer.nextSibling);
             }
         }
+        setTimeout(() => {
+            if (new TimeFormatter(Date.now() / 1000).formatLongTime() != time.trim()) {
+                chatBox.insertBefore(document.createElement('spacer'), messageContainer.nextSibling);
+            }
+        }, 6000);
     }, 1500);
     RenderLastMessages();
 };
@@ -668,24 +687,24 @@ function updateChatBox() {
         messageBubbles.forEach(bubble => {
             const bubblePositions = ['first', 'center', 'last', 'unique'];
 
-            bubblePositions.forEach(position=>{
+            bubblePositions.forEach(position => {
                 bubble.classList.remove(position);
             });
             const bubbleParent = bubble.parentNode;
             const bubbleParentClass = bubbleParent.classList[1];
 
-            if (['incoming' , 'outgoing'].includes(bubbleParentClass)) {
-                const bubbleParentPrevious = (bubbleParent.previousSibling 
-                    && bubbleParent.previousSibling.classList 
+            if (['incoming', 'outgoing'].includes(bubbleParentClass)) {
+                const bubbleParentPrevious = (bubbleParent.previousSibling
+                    && bubbleParent.previousSibling.classList
                     && bubbleParent.previousSibling.classList.contains(bubbleParentClass)) ? bubbleParent.previousSibling : false;
-                const bubbleParentNext = (bubbleParent.nextSibling 
+                const bubbleParentNext = (bubbleParent.nextSibling
                     && bubbleParent.nextSibling.classList
                     && bubbleParent.nextSibling.classList.contains(bubbleParentClass)) ? bubbleParent.nextSibling : false;
-    
-                const bubbleNewPos = (bubbleParentPrevious  || bubbleParentNext) ? ((bubbleParentPrevious && !bubbleParentNext) ? bubblePositions[2] : ((bubbleParentPrevious && bubbleParentNext) ? bubblePositions[1] : bubblePositions[0])) : bubblePositions[3];
-    
+
+                const bubbleNewPos = (bubbleParentPrevious || bubbleParentNext) ? ((bubbleParentPrevious && !bubbleParentNext) ? bubblePositions[2] : ((bubbleParentPrevious && bubbleParentNext) ? bubblePositions[1] : bubblePositions[0])) : bubblePositions[3];
+
                 bubble.classList.add(bubbleNewPos);
-            }else{
+            } else {
                 bubble.classList.add(bubblePositions[3]);
             }
 
