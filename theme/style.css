@@ -562,10 +562,11 @@ img[src=""] {
     padding: .5em .3em;
 }
 .messages-list.loading {
-    display: flex;
+    /* display: flex; */
     justify-content: center;
     align-items: center;
     position: relative;
+    aspect-ratio: 1;
 }
 .messages-list.loading::before {
     content: '';
@@ -613,6 +614,8 @@ img[src=""] {
 }
 
 .message.loading {
+    justify-content: center;
+    align-items: center;
     color: gray;
 }
 

@@ -2,7 +2,9 @@
 
 $root = './';
 require_once('./config/config.php');
-
+if(!isset($_SESSION['auth'])){
+    header('Location: ./');
+}
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -13,7 +15,6 @@ include('./partials/_head.php');
 <body>
     <?php
     include('./partials/_navbar.php');
-    if (isset($_SESSION['auth'])) {
     ?>
         <main class="container">
             <aside class="chat-list">
@@ -145,11 +146,6 @@ include('./partials/_head.php');
                 </section>
             </section>
         </main>
-    <?php
-    } else {
-        header('location : /');
-    }
-    ?>
 
     <section class="modal-window">
     </section>

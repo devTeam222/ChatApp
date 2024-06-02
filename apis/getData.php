@@ -31,10 +31,10 @@ class GetData
             if ($user) {
                 $object = new User($user);
                 $response = $object->getData();
-                if(isset($this->data['chat'])){
+                if (isset($this->data['chat'])) {
                     $get_conversations = $this->db->prepare("SELECT * FROM `conversation`  WHERE (`creator` = ? AND `to_user` = ? OR `to_user` = ? AND `creator` = ? )  ORDER BY `date` DESC LIMIT 1");
                     $get_conversations->execute([$this->myId, $response['user_id'], $this->myId, $response['user_id']]);
-    
+
                     if (!$get_conversations->rowCount()) {
                         $create_conversation = $this->db->prepare("INSERT INTO `conversation` (`creator`, `to_user`, `date`) VALUES (?, ?, ?)");
                         $create_conversation->execute([$this->myId, $response['user_id'], $date]);
@@ -49,17 +49,17 @@ class GetData
                 $object = new User($row);
                 $response = $object->getData();
                 // if(isset($this->data['chat'])){
-                    $get_conversations = $this->db->prepare("SELECT * FROM `conversation`  WHERE (`creator` = ? AND `to_user` = ? OR `to_user` = ? AND `creator` = ? )  ORDER BY `date` DESC LIMIT 1");
-                    $get_conversations->execute([$this->myId, $response['user_id'], $this->myId, $response['user_id']]);
-    
-                    if ($get_conversations->rowCount()) {
-                        $conversation_id = $get_conversations->fetch()['id'];
-                    } else {
-                        $create_conversation = $this->db->prepare("INSERT INTO `conversation` (`creator`, `to_user`, `date`) VALUES (?, ?, ?)");
-                        $create_conversation->execute([$this->myId, $response['user_id'], $date]);
-                        $conversation_id = $this->db->lastInsertId();
-                    }
-                    $response['user_id'] = $conversation_id;
+                $get_conversations = $this->db->prepare("SELECT * FROM `conversation`  WHERE (`creator` = ? AND `to_user` = ? OR `to_user` = ? AND `creator` = ? )  ORDER BY `date` DESC LIMIT 1");
+                $get_conversations->execute([$this->myId, $response['user_id'], $this->myId, $response['user_id']]);
+
+                if ($get_conversations->rowCount()) {
+                    $conversation_id = $get_conversations->fetch()['id'];
+                } else {
+                    $create_conversation = $this->db->prepare("INSERT INTO `conversation` (`creator`, `to_user`, `date`) VALUES (?, ?, ?)");
+                    $create_conversation->execute([$this->myId, $response['user_id'], $date]);
+                    $conversation_id = $this->db->lastInsertId();
+                }
+                $response['user_id'] = $conversation_id;
                 // }
                 $result[] = $response;
             }
@@ -180,9 +180,7 @@ class GetData
             }
         }
         $_SESSION['current_messages'] = $response;
-        if (count($response)) {
-            return $response;
-        }
+        return $response;
     }
     public function checkUniqueUserName()
     {
@@ -230,12 +228,13 @@ if (isset($_POST['last_messages'])) {
 
     $last_messages = $data->getLastMessages();
     $users = [];
+    if ($last_messages) {
+        foreach ($last_messages as $key => $message) {
+            $userData = new GetData(["id" => +$message['user']]);
+            $user = $userData->getUsers();
 
-    foreach ($last_messages as $key => $message) {
-        $userData = new GetData(["id" => +$message['user']]);
-        $user = $userData->getUsers();
-
-        $users['user_' . $message['user']] = $user;
+            $users['user_' . $message['user']] = $user;
+        }
     }
 
     $response = [
@@ -255,7 +254,8 @@ if (isset($_POST['conversation_name'])) {
     }
 
     $last_messages = $_SESSION['current_messages'];
-    $last_users = $_SESSION['last_users'];
+    $last_users = isset($_SESSION['last_users']) ? $_SESSION['last_users'] : [];
+
     $users = [];
 
     foreach ($last_messages as $key => $message) {
@@ -274,9 +274,9 @@ if (isset($_POST['conversation_name'])) {
             if (isset($_SESSION['last_users']) && isset($_SESSION['last_users']['user_' . $message['user']])) {
                 $saved_user = $_SESSION['last_users']['user_' . $message['user']];
                 if (
-                    $saved_user['last_seen'] != $user['last_seen']
-                    || $saved_user['username'] != $user['username']
-                    || $saved_user['profile_img'] != $user['profile_img']
+                    @$saved_user['last_seen'] != @$user['last_seen']
+                    || @$saved_user['username'] != @$user['username']
+                    || @$saved_user['profile_img'] != @$user['profile_img']
                 ) {
                     $users['user_' . $message['user']] = $user;
                 }

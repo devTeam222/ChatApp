@@ -79,6 +79,67 @@ class MessageVerifier {
         return messageEl;
     }
 }
+class UserVerifier {
+    constructor(data, exists = false) {
+        this.data = data;
+        this.id = data.id;
+        this.exists = exists;
+    }
+
+    verifyData() {
+        const { id, photo, username, timestamp, content, isNew } = this.data;
+
+        // Vérifie si toutes les données nécessaires sont présentes
+        return (photo && username && timestamp && (content || isNew));
+    }
+
+    getData() {
+        if (!this.verifyData) {
+            return false;
+        }
+        const { id, photo, username, timestamp, content } = this.data;
+        return { id, photo, username, timestamp, content };
+    }
+    generatePreviewHTML() {
+        if (!this.verifyData() || this.exists && !this.exists.new) {
+            return;
+        }
+
+        const { photo, username, timestamp, content } = this.data;
+
+        // Convertit le timestamp en heure
+        const formatter = new TimeFormatter(timestamp, false);
+        const formattedTime = formatter.formatTime();
+        const firstName = username.split(' ')[0] || username;
+
+        // Génère l'élément HTML
+        let messageEl = document.getElementById("chat_" + this.id) || document.createElement('li');
+        messageEl.className = "message";
+        messageEl.setAttribute('data-time', timestamp);
+        messageEl.id = "chat_" + this.id;
+        const lastSeen = this.data.last_seen;
+        const period = Math.floor((Date.now() / 1000) - lastSeen);
+        const formattedLastSeen = (period > 60 ? (new NumberFormatter(period).formatTime())
+            : "<" + new NumberFormatter(60).formatTime());
+        const online_status = (period) < 20 ? 'online' : 'off';
+        const activeStatus = (period) < 20 ? '' : formattedLastSeen;
+        const messagePrev = this.id === currentUser.user_id ? "Envoyez-vous un message" : "Envoyer un message"
+        messageEl = document.createElement('li');
+        messageEl.className = "message";
+        messageEl.id = "new_chat_" + this.id;
+        messageEl.innerHTML = `
+        <span class="user-profile" data-lastseen="${lastSeen}">
+            <img src="${photo}" alt="${firstName}'s profile picture">
+            <div class="status ${online_status}"></div>
+        </span>
+        <span class="chat-data">
+            <div class="message-time"><strong>${username}</strong></div>
+            <div class="message-preview"><span>${messagePrev}</span></div>
+        </span>
+        `;
+        return messageEl;
+    }
+}
 let last_messages_req = 0;
 function getAvailableUsers() {
     return new Promise((resolve, reject) => {
@@ -137,7 +198,7 @@ function getCurrentUser() {
     })
 }
 
-function getLastMessages() {
+function getChatPreview() {
     return new Promise((resolve, reject) => {
         let xhr = new XMLHttpRequest();
         xhr.open('POST', './apis/getData.php');
@@ -372,9 +433,10 @@ function detecterLiVisibles(ulElement) {
 export { 
     currentUser, 
     MessageVerifier, 
+    UserVerifier, 
     getAvailableUsers, 
     getCurrentUser, 
-    getLastMessages, 
+    getChatPreview, 
     detecterLiVisibles, 
     getMessages, 
     UploadMessage, 

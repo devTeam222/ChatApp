@@ -1,11 +1,13 @@
 import { TimeFormatter, NumberFormatter } from "../formatters.js";
 import { refreshImages } from "../images.js";
-import { sessionError, serverError } from "../index.js"
+import { sessionError, serverError } from "../index.js";
+import { getOrCreateConversation } from "../updateData";
 import {
     currentUser,
     MessageVerifier,
+    UserVerifier,
     getAvailableUsers,
-    getLastMessages,
+    getChatPreview,
     detecterLiVisibles,
     getMessages,
     UploadMessage,
@@ -19,24 +21,18 @@ async function App() {
 
     if (currentUser.user_id) {
         UpdateConectedUser(currentUser);
-        await RenderLastMessages();
-        setInterval(async () => {
-            await RenderLastMessages();
-        }, 1000);
+        renderChatPreview();
         addNewChat();
     }
 }
-function createChat(id = null) {
-    
-}
-async function RenderLastMessages() {
+async function renderChatPreview() {
     refreshImages();
     const container = document.querySelector(".container");
     const messageList = document.getElementById("message-list");
     if (!messageList.querySelector('.message')) {
         messageList.classList.add('loading');
     }
-    const getDatas = await getLastMessages();
+    const getDatas = await getChatPreview();
     if (getDatas.server_error) {
         serverError();
         return;
@@ -59,14 +55,13 @@ async function RenderLastMessages() {
         container.classList.contains('active') && displayMessages(currentChat, []);
         messageList.innerHTML = `
             <li class="message loading add-new-chat">
-                <span class="chat-data">
-                    <div class="message-preview"><span>Ajouter un nouveau message</span></div>
-                </span>
+                <span>Ajouter un nouveau message</span>
             </li>`;
         addNewChat();
         return;
     }
     last_messages.forEach(async chat => {
+        return;
         const user = users[`user_${chat.user}`];
         if (!user) {
             return;
@@ -168,6 +163,9 @@ function removeActiveChats() {
     currentChat = false;
 }
 async function newInChatlist(chat, number = 0, exists = false, parent = null) {
+    if (!chat) {
+        return;
+    }
     const container = document.querySelector('.container');
     const chatParent = chat.parentNode || ((parent) ?? document.getElementById('message-list'));
     if (chatParent.querySelector('.loading')) {
@@ -295,22 +293,24 @@ function addNewChat() {
                 const [photo, username, timestamp] = [user.profile_img, user.username, chat.last_seen];
                 const data = { id: chat['user_id'], photo, username, timestamp, content: false, isNew: true };
 
-                const messageData = messagePreview(data);
+                const messageData = userPreview(data);
                 if (!document.getElementById("new_chat_" + data.id)) {
                     await newInChatlist(messageData.element, 0, false, messageList);
 
                 }
-                messageData.element.addEventListener("click", (e) => {
+                messageData.element.addEventListener("click", async (e) => {
                     e.preventDefault();
                     removeActiveChats();
-                    const newChatId = messageData.validData.id;
-                    console.log(messageData.validData);
-                    messageData.element.classList.add("active");
-                    newChatDialog.classList.remove('active');
-                    container.classList.add("active");
-                    container.setAttribute('data-chat', newChatId);
-                    const user_data = { id:newChatId , photo: `${user.profile_img}`, username: user.username, name: user.name, lastSeen: user.last_seen, chat_id: user.user_id };
-                    openMessage(user_data);
+                    const newChatId = await getOrCreateConversation(messageData.validData.id);
+                    console.log(newChatId);
+                    if (newChatId.id) {
+                        messageData.element.classList.add("active");
+                        newChatDialog.classList.remove('active');
+                        container.classList.add("active");
+                        container.setAttribute('data-chat', newChatId);
+                        const user_data = { id:newChatId.id , photo: `${user.profile_img}`, username: user.username, name: user.name, lastSeen: user.last_seen, chat_id: user.user_id };
+                        openMessage(user_data);
+                    }
                 })
             });
         })
@@ -474,9 +474,13 @@ async function displayMessages(id, messageList = false) {
     updateChatBox();
 }
 
-// Exemple d'utilisation
 function messagePreview(data, exists = false) {
     const verifier = new MessageVerifier(data, exists);
+    const [validData, element] = [verifier.getData(), verifier.generatePreviewHTML()];
+    return { validData, element };
+}
+function userPreview(data, exists = false) {
+    const verifier = new UserVerifier(data, exists);
     const [validData, element] = [verifier.getData(), verifier.generatePreviewHTML()];
     return { validData, element };
 }
@@ -647,7 +651,7 @@ async function SendMessage(message) {
             }
         }, 6000);
     }, 1500);
-    RenderLastMessages();
+    renderChatPreview();
 };
 function copy(text) {
     const textarea = document.createElement('textarea');

@@ -6,6 +6,7 @@ class UpdateData
     private $db;
     public $data;
     private $myId;
+    public $now;
 
     // Constructeur de la classe
     public function __construct($array = [])
@@ -14,6 +15,25 @@ class UpdateData
         $this->db = $db;
         $this->data = $array;
         $this->myId = $_SESSION['id'];
+    }
+    public function getOrCreateChat()
+    {
+        $date = $this->now;
+        $user_id = $this->data['user_id'];
+        $get_conversations = $this->db->prepare("SELECT id FROM `conversation`  WHERE (`creator` = ? AND `to_user` = ? OR `to_user` = ? AND `creator` = ? )  ORDER BY `date` DESC LIMIT 1");
+        $get_conversations->execute([$this->myId, $user_id, $this->myId, $user_id]);
+
+        if (!$get_conversations->rowCount()) {
+            $create_conversation = $this->db->prepare("INSERT INTO `conversation` (`creator`, `to_user`, `date`) VALUES (?, ?, ?)");
+            $create_conversation->execute([$this->myId, $user_id, $date]);
+            $chat_id = $this->db->lastInsertId();
+        }else{
+            $conversation = $get_conversations->fetch();
+            $chat_id = $conversation['id'];
+        }
+        return [
+            'id'=>$chat_id,
+        ];
     }
 
     // Fonction membre de la classe
@@ -35,7 +55,8 @@ class UpdateData
         return $result;
     }
 
-    private function removeFile($id){
+    private function removeFile($id)
+    {
         // Préparation de la requête SQL pour récupérer les informations de la vidéo à partir de l'ID
         $get_path = $this->db->prepare('SELECT * FROM files WHERE id= ?');
 
@@ -43,7 +64,7 @@ class UpdateData
         $get_path->execute([$id]);
 
         // Récupération des informations de la vidéo dans un tableau associatif
-        $path = "../".$get_path->fetch()['path'];
+        $path = "../" . $get_path->fetch()['path'];
 
         @unlink($path);
 
@@ -71,18 +92,29 @@ class UpdateData
 
         return ['success' => true];
     }
-
 };
 
-if(isset($_POST['remove'])){
-    if(!isset($_SESSION['auth'])){
+if (isset($_POST['remove'])) {
+    if (!isset($_SESSION['auth'])) {
         return;
     }
     $message = [
-        "message"=> +$_POST['remove'],
+        "message" => $_POST['remove'],
     ];
 
     $updateData = new UpdateData($message);
     $removed = $updateData->removeMessage();
     echo json_encode($removed);
+};
+if (isset($_POST['get_chat_id'])) {
+    if (!isset($_SESSION['auth'])) {
+        return;
+    }
+    $chat = [
+        "user_id" => $_POST['get_chat_id'],
+    ];
+
+    $updateData = new UpdateData($chat);
+    $created = $updateData->getOrCreateChat();
+    echo json_encode($created);
 };

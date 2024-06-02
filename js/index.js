@@ -81,37 +81,45 @@ async function sessionError() {
         logoutBtn.textContent = "Deconneté"
 }
 async function serverError() {
-    const modal_window = document.querySelector('.modal-window');
-    const userImg = document.querySelector('.connected-user img').getAttribute('src') || ''
-    modal_window.classList.add('active');
-    modal_window.innerHTML = `
-    <header class="modal-header">
-            <h3>Session expirée</h3>
-        </header>
-        <section method="post" class="modal-body" data-type="login">
-            <section class="active conneted-user">
-                <h1>Salut là-bas !</h1>
-                <label title="Profil" class="profile-picture">
-                    <svg width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round">
-                        <path d="M18 20a6 6 0 0 0-12 0" />
-                        <circle cx="12" cy="10" r="4" />
-                        <circle cx="12" cy="12" r="10" />
-                    </svg>
-                    <img src="${userImg}" alt="" id="image-preview">
-                </label>    
-                <p>🛠️✨ Nous tenions juste à vous informer que notre service subit actuellement une petite mise à jour, ce qui signifie qu'il sera temporairement indisponible. Pas d'inquiétude, nos experts travaillent dur pour le remettre en ligne aussi rapidement que possible !</p>
-                <p>Nous vous prions de bien vouloir nous excuser pour ce petit contretemps et vous remercions pour votre patience et votre compréhension. En attendant, n'hésitez pas à nous contacter si vous avez des questions ou des préoccupations.</p>
+    const sessStError = sessionStorage.getItem('sessionError');
+    if (sessStError) {
+        sessionStorage.removeItem('sessionError');
+        return;
+    }
+        const modal_window = document.querySelector('.modal-window');
+        const userImg = document.querySelector('.connected-user img').getAttribute('src') || ''
+        modal_window.classList.add('active');
+        modal_window.innerHTML = `
+        <header class="modal-header">
+                <h3>Session expirée</h3>
+            </header>
+            <section method="post" class="modal-body" data-type="login">
+                <section class="active conneted-user">
+                    <h1>Salut là-bas !</h1>
+                    <label title="Profil" class="profile-picture">
+                        <svg width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-user-round">
+                            <path d="M18 20a6 6 0 0 0-12 0" />
+                            <circle cx="12" cy="10" r="4" />
+                            <circle cx="12" cy="12" r="10" />
+                        </svg>
+                        <img src="${userImg}" alt="" id="image-preview">
+                    </label>    
+                    <p>🛠️✨ Nous tenions juste à vous informer que notre service subit actuellement une petite mise à jour, ce qui signifie qu'il sera temporairement indisponible. Pas d'inquiétude, nos experts travaillent dur pour le remettre en ligne aussi rapidement que possible !</p>
+                    <p>Nous vous prions de bien vouloir nous excuser pour ce petit contretemps et vous remercions pour votre patience et votre compréhension. En attendant, n'hésitez pas à nous contacter si vous avez des questions ou des préoccupations.</p>
+                </section>
             </section>
-        </section>
-        <footer class="modal-footer">
-            <span>À bientôt !</span>
-            <div class="buttons">
-                <button type="button" form="modal-form" class="bouton logout loading">Actualisation...</button>
-            </div>
-        </footer>
-    `;
-    refreshImages();
-    location.reload();
+            <footer class="modal-footer">
+                <span>À bientôt !</span>
+                <div class="buttons">
+                    <button type="button" form="modal-form" class="bouton logout loading">Actualisation...</button>
+                </div>
+            </footer>
+        `;
+        refreshImages();
+        sessionStorage.setItem("sessionError", true);
+        location.reload();
+        
+    
 }
 
 export { sessionError, serverError }
